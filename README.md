@@ -12,29 +12,48 @@ It intentionally includes only the frontend architecture required to demonstrate
 
 A conventional React application can become difficult to maintain when project types begin requiring different:
 
-* pages;
-* components;
-* state;
-* workflows;
-* tools;
-* validation;
-* UI behavior;
-* data handling.
+- pages;
+
+- components;
+
+- state;
+
+- workflows;
+
+- tools;
+
+- validation;
+
+- UI behavior;
+
+- data handling.
 
 This template separates those concerns into several architectural layers:
 
 ```text
+
 App
+
 │
+
 ├── Workspace
+
 │
+
 ├── Runtime
+
 │
+
 ├── Engines
+
 │
+
 ├── Workflows
+
 │
+
 └── Components
+
 ```
 
 Instead of filling `App.jsx` with project-specific conditional rendering, the active project selects an **engine**.
@@ -52,11 +71,15 @@ A project represents a specific set of application data and configuration.
 For example, two projects may contain completely different data while still using the same engine.
 
 ```text
+
 Project A
+
 engineKey: default
 
 Project B
+
 engineKey: default
+
 ```
 
 Both projects use the same application behavior because they share the same engine, but their project data may be completely different.
@@ -64,8 +87,11 @@ Both projects use the same application behavior because they share the same engi
 A different project could instead specify another engine:
 
 ```text
+
 Project C
+
 engineKey: alternate
+
 ```
 
 The project's `engineKey` determines which engine configuration and engine-specific runtime are selected.
@@ -79,12 +105,19 @@ An engine defines how a particular type of project behaves.
 Each engine has its own folder:
 
 ```text
+
 src/
+
 └── Engines/
+
     └── Default/
+
         ├── engine.js
+
         ├── PagesAdapter.jsx
+
         └── AppAdapter.jsx
+
 ```
 
 The engine definition identifies the engine and exposes its adapters.
@@ -94,10 +127,13 @@ Example:
 ```js
 export const DefaultEngine = {
   key: "default",
+
   label: "Default",
 
   AppAdapter,
+
   PagesAdapter,
+
   getPagesConfig,
 };
 ```
@@ -107,16 +143,23 @@ Additional engines can be added without restructuring the application.
 For example:
 
 ```text
+
 Engines/
+
 ├── Default/
+
 ├── EngineTwo/
+
 └── EngineThree/
+
 ```
 
 Each engine is then registered in:
 
 ```text
+
 src/Engines/index.js
+
 ```
 
 The registry allows the application to retrieve an engine using the project's `engineKey`.
@@ -132,21 +175,30 @@ Runtime is divided into two levels.
 ## Global Runtime
 
 ```text
+
 src/Runtime/GlobalRuntime.jsx
+
 ```
 
 Global runtime contains state and behavior shared across engines.
 
 Examples in a larger application might include:
 
-* active project;
-* project lists;
-* user information;
-* global UI state;
-* loading state;
-* shared APIs;
-* notifications;
-* application settings.
+- active project;
+
+- project lists;
+
+- user information;
+
+- global UI state;
+
+- loading state;
+
+- shared APIs;
+
+- notifications;
+
+- application settings.
 
 The template intentionally keeps the global runtime minimal.
 
@@ -159,7 +211,9 @@ Each engine may also have its own runtime.
 The default engine uses:
 
 ```text
+
 src/Runtime/DefaultRuntime.jsx
+
 ```
 
 An engine runtime contains state or behavior that only makes sense for that engine.
@@ -167,17 +221,25 @@ An engine runtime contains state or behavior that only makes sense for that engi
 Additional engines may therefore introduce:
 
 ```text
+
 Runtime/
+
 ├── GlobalRuntime.jsx
+
 ├── DefaultRuntime.jsx
+
 ├── EngineTwoRuntime.jsx
+
 └── EngineThreeRuntime.jsx
+
 ```
 
 All runtime hooks are loaded through:
 
 ```text
+
 src/Runtime/index.js
+
 ```
 
 The runtime index uses a static React hook structure.
@@ -194,6 +256,7 @@ export function useAllRuntime() {
 
   return {
     global,
+
     default: defaultRuntime,
   };
 }
@@ -210,11 +273,17 @@ The selected engine runtime is then merged with the global runtime.
 Conceptually:
 
 ```text
+
 Global Runtime
+
       +
+
 Selected Engine Runtime
+
       ↓
+
 Combined Runtime
+
 ```
 
 ---
@@ -224,7 +293,9 @@ Combined Runtime
 The engine registry lives at:
 
 ```text
+
 src/Engines/index.js
+
 ```
 
 It maps engine keys to engine definitions.
@@ -242,7 +313,9 @@ A larger application may use:
 ```js
 const ENGINE_REGISTRY = {
   default: DefaultEngine,
+
   engineTwo: EngineTwo,
+
   engineThree: EngineThree,
 };
 ```
@@ -258,11 +331,17 @@ Each engine defines which workflow pages are available through its `PagesAdapter
 Example:
 
 ```text
+
 Default Engine
+
 │
+
 ├── Page 1
+
 ├── Page 2
+
 └── Page 3
+
 ```
 
 The configuration is exposed through `getPagesConfig()`:
@@ -271,25 +350,34 @@ The configuration is exposed through `getPagesConfig()`:
 [
   {
     key: "page1",
+
     path: "page1",
+
     label: "Page 1",
   },
+
   {
     key: "page2",
+
     path: "page2",
+
     label: "Page 2",
   },
+
   {
     key: "page3",
+
     path: "page3",
+
     label: "Page 3",
   },
-]
+];
 ```
 
 This configuration serves two purposes:
 
 1. defining the navigation available for the active engine;
+
 2. allowing the Header to generate workflow links dynamically.
 
 The `PagesAdapter` then defines which React workflow component is rendered for each route.
@@ -322,15 +410,21 @@ Another engine can use the same route architecture while mounting completely dif
 Workflow components live in:
 
 ```text
+
 src/Workflows/
+
 ```
 
 The template contains:
 
 ```text
+
 Page1.jsx
+
 Page2.jsx
+
 Page3.jsx
+
 ```
 
 A workflow represents a major application screen or functional process.
@@ -340,13 +434,21 @@ The engine's `PagesAdapter` decides which workflows belong to that engine.
 A real application might replace the generic workflows with names such as:
 
 ```text
+
 Viewer
+
 Editor
+
 Reports
+
 Dashboard
+
 Settings
+
 Planning
+
 Analysis
+
 ```
 
 or any other application-specific workflows.
@@ -360,10 +462,15 @@ A different engine may use an entirely different set of workflow files.
 The template includes generic component-group folders:
 
 ```text
+
 src/
+
 ├── ComponentsGroup1/
+
 ├── ComponentsGroup2/
+
 └── ComponentsGroup3/
+
 ```
 
 These folders intentionally do not prescribe a particular organization strategy.
@@ -371,25 +478,37 @@ These folders intentionally do not prescribe a particular organization strategy.
 Components can be grouped by page:
 
 ```text
+
 Team/
+
 Setup/
+
 Output/
+
 ```
 
 by function:
 
 ```text
+
 Forms/
+
 Filters/
+
 Extensions/
+
 ```
 
 by domain:
 
 ```text
+
 Accounts/
+
 Inventory/
+
 Reports/
+
 ```
 
 or by a combination of these approaches.
@@ -419,16 +538,27 @@ Different engines might configure or interact with the same application-level ma
 Conceptually:
 
 ```text
+
 App.jsx
+
 │
+
 ├── Header
+
 │
+
 ├── Engine AppAdapter
+
 │   └── Shared engine-level components
+
 │
+
 └── Routes
+
     └── Engine PagesAdapter
+
         └── Workflow
+
 ```
 
 ---
@@ -444,17 +574,25 @@ The `PagesAdapter` can simply mount another workflow.
 For example:
 
 ```text
+
 Engine A
+
 /output
+
 → StandardOutput.jsx
+
 ```
 
 while another engine could use:
 
 ```text
+
 Engine B
+
 /output
+
 → SpecializedOutput.jsx
+
 ```
 
 Creating another `OutputAdapter` underneath both workflows would usually add another abstraction layer without solving a new problem.
@@ -467,34 +605,150 @@ Adapters below the workflow level should therefore only be introduced when they 
 
 Workspace contains application-level UI that is not owned by a particular engine workflow.
 
-The template currently includes:
+The template now includes:
 
 ```text
+
 src/
+
 └── Workspace/
-    └── Navigation/
-        ├── Header.jsx
-        └── Header.css
+
+├── Navigation/
+
+│   ├── Header.jsx
+
+│   └── Header.css
+
+│
+
+├── WorkspacePage1/
+
+│   └── WorkspacePage1.jsx
+
+│
+
+└── WorkspacePage2/
+
+    └── WorkspacePage2.jsx
 ```
 
-The Header receives `pagesConfig` from the active engine and automatically generates navigation links for that engine's workflows.
+The Workspace layer is intentionally independent of the active engine.
 
-Workspace may also contain pages or components that exist independently of the active engine.
+Workspace pages are useful for application-level screens that should remain available regardless of which project type or engine is currently active.
 
-Examples might include:
+Examples include:
 
 ```text
-Projects
-Account
+
+Landing Page
+
+Project Manager
+
+Project Selector
+
 Login
+
+Account
+
+Application Preferences
+
+Global Settings
+
 Community
-Application Settings
-Project Selection
+
 ```
 
-These pages could be routed directly by the application rather than through an engine's `PagesAdapter`.
+`WorkspacePage1` demonstrates a workspace-level page that appears before the engine workflows.
 
-The template does not include any workspace-level pages yet.
+It is mounted directly at the root route:
+
+```text
+
+/
+
+```
+
+This makes it a stable default page that does not depend on an engine being loaded.
+
+A real application could rename this page to something such as:
+
+```text
+
+Landing
+
+Projects
+
+ProjectManager
+
+Dashboard
+
+Login
+
+```
+
+For applications that load projects dynamically, a project manager or project selector is often a useful default workspace page because it can load before any engine-specific workflows are required.
+
+`WorkspacePage2` demonstrates a workspace-level page that appears after the engine workflows.
+
+A real application could rename this page to something such as:
+
+```text
+
+Preferences
+
+Account
+
+Settings
+
+About
+
+```
+
+This demonstrates that workspace routes can exist on either side of the dynamic engine workflow routes.
+
+Conceptually:
+
+```text
+
+Workspace Page
+↓
+Engine Workflow Pages
+↓
+Workspace Page
+
+```
+
+The Header is also a workspace-level component.
+
+It receives `pagesConfig` from the active engine and inserts the engine's dynamic workflow links between the template's static workspace links.
+
+Conceptually:
+
+```text
+
+WorkspacePage1
+↓
+Page 1
+Page 2
+Page 3
+↓
+WorkspacePage2
+
+```
+
+The Header therefore demonstrates both types of navigation:
+
+- static workspace links defined by the application;
+
+- dynamic workflow links defined by the active engine.
+
+The Header also includes a responsive mobile navigation menu so the same route structure remains usable on smaller screens.
+
+Workspace pages are routed directly by `App.jsx`.
+
+They are not defined by an engine's `PagesAdapter`.
+
+This separation allows an application to provide stable application-level functionality even when no engine is selected or an engine-specific project has not yet loaded.
 
 ---
 
@@ -505,19 +759,63 @@ Routing is handled with React Router.
 `BrowserRouter` is mounted around the application in:
 
 ```text
+
 src/main.jsx
+
 ```
 
 `App.jsx` contains the application's main `Routes` container.
 
-The selected engine contributes workflow routes through its `PagesAdapter`.
+The route structure deliberately combines workspace-level routes with engine-level routes.
 
-The default engine therefore controls both:
+Conceptually:
 
-* which workflow routes exist;
-* which links appear in the Header.
+```text
 
-This keeps engine navigation and engine routing synchronized from the same configuration.
+Routes
+│
+├── / → WorkspacePage1
+│
+├── engine routes → PagesAdapter
+│ ├── /page1
+│ ├── /page2
+│ └── /page3
+│
+├── /workspace2 → WorkspacePage2
+│
+└── * → /
+
+```
+
+The root route is a workspace-level page rather than an engine workflow.
+
+This gives the application a stable default route even before an engine is available.
+
+The selected engine contributes its workflow routes through its `PagesAdapter`.
+
+The engine therefore controls:
+
+- which engine workflow routes exist;
+
+- which workflow components are rendered;
+
+- which dynamic workflow links appear in the Header.
+
+The application controls:
+
+- workspace-level routes;
+
+- static workspace navigation links;
+
+- the default root page;
+
+- fallback routing.
+
+The Header combines both navigation sources.
+
+A workspace link can appear before the dynamic engine links, after them, or both.
+
+This keeps engine navigation and engine routing synchronized while preserving application-level routes that are independent of the engine.
 
 ---
 
@@ -530,20 +828,38 @@ The browser viewport is treated as one full-screen application container.
 Conceptually:
 
 ```text
+
 Viewport
+
 │
+
 └── App
-    │
-    ├── Header
-    │
-    └── Main Layer
-        ├── AppAdapter components
-        └── Current workflow
+
+│
+
+├── Header
+
+│   ├── Workspace link
+│   ├── Engine workflow links
+│   └── Workspace link
+
+│
+
+└── Main Layer
+
+    ├── Engine AppAdapter components
+
+    └── Routes
+        ├── WorkspacePage1
+        ├── Engine workflows
+        └── WorkspacePage2
 ```
 
 `index.css` contains only basic global layout rules.
 
 `App.css` establishes the primary application shell.
+
+The Header owns its own desktop and mobile navigation styling through `Header.css`.
 
 Individual components and workflows should generally own their own stylesheets rather than relying on a large global stylesheet.
 
@@ -556,9 +872,13 @@ This keeps styling localized and reduces unintended interactions between unrelat
 The template contains a minimal root-level data directory:
 
 ```text
+
 Data/
+
 └── Projects/
+
     └── defaultProject.json
+
 ```
 
 The default project contains only the information required to select an engine.
@@ -568,6 +888,7 @@ Example:
 ```json
 {
   "name": "Default Project",
+
   "engineKey": "default"
 }
 ```
@@ -578,14 +899,21 @@ It provides a minimal local project that allows the engine/runtime architecture 
 
 A real application could later replace this with:
 
-* MongoDB;
-* PostgreSQL;
-* SQLite;
-* local filesystem storage;
-* REST APIs;
-* GraphQL;
-* cloud databases;
-* another persistence layer.
+- MongoDB;
+
+- PostgreSQL;
+
+- SQLite;
+
+- local filesystem storage;
+
+- REST APIs;
+
+- GraphQL;
+
+- cloud databases;
+
+- another persistence layer.
 
 Projects and engines are separate concepts.
 
@@ -601,14 +929,21 @@ The project contains **the particular data and configuration being handled**.
 
 This template intentionally does not include:
 
-* a Node or Express server;
-* API routes;
-* authentication;
-* user accounts;
-* database connections;
-* cloud hosting configuration;
-* provider credentials;
-* external service integrations.
+- a Node or Express server;
+
+- API routes;
+
+- authentication;
+
+- user accounts;
+
+- database connections;
+
+- cloud hosting configuration;
+
+- provider credentials;
+
+- external service integrations.
 
 Those systems are highly application-specific.
 
@@ -623,9 +958,13 @@ Backend infrastructure can then be added according to the application's actual r
 A future project could add folders such as:
 
 ```text
+
 Server/
+
 Data/
+
 src/
+
 ```
 
 and connect the frontend to a local or remote backend without changing the engine/workflow architecture.
@@ -639,25 +978,33 @@ Clone or download the repository.
 Install dependencies:
 
 ```bash
+
 npm install
+
 ```
 
 Start the Vite development server:
 
 ```bash
+
 npm run dev
+
 ```
 
 Run ESLint:
 
 ```bash
+
 npm run lint
+
 ```
 
 Build for production:
 
 ```bash
+
 npm run build
+
 ```
 
 ---
@@ -669,24 +1016,35 @@ To create another engine:
 1. Create a new engine folder under `src/Engines/`.
 
 ```text
+
 Engines/
+
 └── NewEngine/
+
     ├── engine.js
+
     ├── PagesAdapter.jsx
+
     └── AppAdapter.jsx
+
 ```
 
 2. Create an engine-specific runtime.
 
 ```text
+
 Runtime/
+
 └── NewEngineRuntime.jsx
+
 ```
 
 3. Add the runtime hook to:
 
 ```text
+
 src/Runtime/index.js
+
 ```
 
 All runtime hooks should remain statically declared.
@@ -694,7 +1052,9 @@ All runtime hooks should remain statically declared.
 4. Register the engine in:
 
 ```text
+
 src/Engines/index.js
+
 ```
 
 5. Set a project's `engineKey` to the new engine key.
@@ -704,6 +1064,7 @@ For example:
 ```json
 {
   "name": "Example Project",
+
   "engineKey": "newEngine"
 }
 ```
@@ -719,6 +1080,7 @@ The application shell does not need to be rewritten.
 The central idea of this template is:
 
 ```text
+
 Project selects Engine
 
 Engine selects behavior
@@ -730,6 +1092,7 @@ PagesAdapter selects workflows
 Workflow selects components
 
 Workspace supplies application-level UI
+
 ```
 
 This allows an application to grow across multiple project types without placing all project-specific behavior directly inside `App.jsx`.

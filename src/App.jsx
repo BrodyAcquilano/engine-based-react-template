@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router";
 
 import Header from "./Workspace/Navigation/Header.jsx";
+import WorkspacePage1 from "./Workspace/WorkspacePage1/WorkspacePage1.jsx";
+import WorkspacePage2 from "./Workspace/WorkspacePage2/WorkspacePage2.jsx";
 
 import { useAllRuntime } from "./Runtime/index.js";
 import { getEngine } from "./Engines/index.js";
@@ -42,9 +44,6 @@ function App() {
   const pagesConfig =
     engine?.getPagesConfig?.() || [];
 
-  const defaultPage =
-    pagesConfig[0]?.path || "page1";
-
   return (
     <div className="app">
       <Header
@@ -61,12 +60,7 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={
-              <Navigate
-                to={`/${defaultPage}`}
-                replace
-              />
-            }
+            element={<WorkspacePage1 />}
           />
 
           {engine?.PagesAdapter?.({
@@ -74,10 +68,15 @@ function App() {
           })}
 
           <Route
+            path="/workspace2"
+            element={<WorkspacePage2 />}
+          />
+
+          <Route
             path="*"
             element={
               <Navigate
-                to={`/${defaultPage}`}
+                to="/"
                 replace
               />
             }
